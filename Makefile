@@ -1,23 +1,59 @@
 SHELL := /bin/bash
 
 .PHONY: \
-	task1 stop1 clean1 status1 \
-	task2 stop2 clean2 status2 \
-	task3 stop3 clean3 status3 \
-	argocd-ui argocd-password
+	task1 stop1 clean1 prune1 status1 \
+	task2 stop2 clean2 prune2 status2 \
+	task3 stop3 clean3 prune3 status3 \
+	argocd-ui argocd-password \
+	space
+
+# --------------------------------------------------
+# General helpers
+# --------------------------------------------------
+
+space:
+	@echo "=== Disk Usage ==="
+	@df -h /
+	@echo ""
+	@echo "=== Vagrant Data ==="
+	@du -sh ~/.vagrant.d 2>/dev/null || true
+	@du -sh ~/VirtualBox\ VMs 2>/dev/null || true
+	@echo ""
+	@echo "=== Docker Data ==="
+	@docker system df 2>/dev/null || true
+
 
 # --------------------------------------------------
 # Part 1: K3s + Vagrant
 # --------------------------------------------------
 
 task1:
+	@echo "==> Starting Part 1..."
 	cd p1 && vagrant up
 
 stop1:
+	@echo "==> Stopping Part 1 VMs..."
 	cd p1 && vagrant halt
 
 clean1:
+	@echo "==> Deleting Part 1 VMs..."
 	cd p1 && vagrant destroy -f
+
+prune1:
+	@echo "==> Deleting Part 1 VMs..."
+	cd p1 && vagrant destroy -f || true
+
+	@echo "==> Removing unused Vagrant boxes..."
+	vagrant box prune -f || true
+
+	@echo "==> Cleaning apt cache..."
+	sudo apt clean
+
+	@echo ""
+	@echo "=== Space after Part 1 cleanup ==="
+	@df -h /
+	@du -sh ~/.vagrant.d 2>/dev/null || true
+	@du -sh ~/VirtualBox\ VMs 2>/dev/null || true
 
 status1:
 	@echo "=== Part 1 Vagrant ==="
@@ -29,13 +65,32 @@ status1:
 # --------------------------------------------------
 
 task2:
+	@echo "==> Starting Part 2..."
 	cd p2 && vagrant up
 
 stop2:
+	@echo "==> Stopping Part 2 VM..."
 	cd p2 && vagrant halt
 
 clean2:
+	@echo "==> Deleting Part 2 VM..."
 	cd p2 && vagrant destroy -f
+
+prune2:
+	@echo "==> Deleting Part 2 VM..."
+	cd p2 && vagrant destroy -f || true
+
+	@echo "==> Removing unused Vagrant boxes..."
+	vagrant box prune -f || true
+
+	@echo "==> Cleaning apt cache..."
+	sudo apt clean
+
+	@echo ""
+	@echo "=== Space after Part 2 cleanup ==="
+	@df -h /
+	@du -sh ~/.vagrant.d 2>/dev/null || true
+	@du -sh ~/VirtualBox\ VMs 2>/dev/null || true
 
 status2:
 	@echo "=== Part 2 Vagrant ==="
@@ -123,6 +178,21 @@ stop3:
 clean3:
 	@echo "==> Deleting K3d cluster..."
 	k3d cluster delete iot
+
+prune3:
+	@echo "==> Deleting K3d cluster..."
+	@k3d cluster delete iot || true
+
+	@echo "==> Removing unused Docker data..."
+	@docker system prune -a -f
+
+	@echo "==> Cleaning apt cache..."
+	@sudo apt clean
+
+	@echo ""
+	@echo "=== Space after Part 3 cleanup ==="
+	@df -h /
+	@docker system df || true
 
 status3:
 	@echo "=== K3d Cluster ==="
