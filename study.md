@@ -12,6 +12,10 @@ Before starting the technical checks, be ready to explain these four ideas simpl
 
 ## K3s
 
+Kubernetes is a system that manages containerized applications.
+
+It can start applications, keep them running, restart them if they fail, and manage multiple copies of the same application.
+
 K3s is a lightweight version of Kubernetes.
 
 Kubernetes manages containers and applications.
@@ -27,6 +31,48 @@ manages Pods
  ↓
 keeps applications running
 ```
+
+Instead of one copy doing all the work:
+
+300 users
+    ↓
+  Pod 1
+
+you can spread the work:
+
+300 users
+    ↓
+ Service
+   ↙ ↓ ↘
+Pod1 Pod2 Pod3
+
+Maybe approximately:
+
+Pod 1 handles 100 users
+Pod 2 handles 100 users
+Pod 3 handles 100 users
+
+
+Before:
+
+my-app-abc ✅
+my-app-def ✅
+my-app-ghi ✅
+
+One dies:
+
+my-app-abc ✅
+my-app-def ❌
+my-app-ghi ✅
+
+Kubernetes creates another:
+
+my-app-abc ✅
+my-app-ghi ✅
+my-app-xyz ✅
+
+
+
 
 ## Vagrant
 
