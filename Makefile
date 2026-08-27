@@ -7,7 +7,7 @@ SHELL := /bin/bash
 	argocd-ui argocd-password
 
 # --------------------------------------------------
-# Part 1
+# Part 1: K3s + Vagrant
 # --------------------------------------------------
 
 task1:
@@ -25,7 +25,7 @@ status1:
 
 
 # --------------------------------------------------
-# Part 2
+# Part 2: K3s + 3 applications
 # --------------------------------------------------
 
 task2:
@@ -43,7 +43,7 @@ status2:
 
 
 # --------------------------------------------------
-# Part 3
+# Part 3: K3d + Argo CD
 # --------------------------------------------------
 
 task3:
@@ -53,31 +53,49 @@ task3:
 
 	@echo "==> Checking K3d..."
 	@if ! command -v k3d >/dev/null 2>&1; then \
+		echo "K3d not found. Installing..."; \
 		curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash; \
+	else \
+		echo "K3d already installed"; \
 	fi
 
 	@echo "==> Checking kubectl..."
 	@if ! command -v kubectl >/dev/null 2>&1; then \
+		echo "kubectl not found. Installing..."; \
 		sudo snap install kubectl --classic; \
+	else \
+		echo "kubectl already installed"; \
 	fi
 
-	@echo "==> Creating K3d cluster..."
+	@echo "==> Checking K3d cluster..."
 	@if ! k3d cluster list | grep -q '^iot '; then \
 		k3d cluster create iot; \
 	else \
 		echo "K3d cluster 'iot' already exists"; \
+		k3d cluster start iot >/dev/null 2>&1 || true; \
 	fi
 
+	@echo "==> Waiting for Kubernetes node..."
+	@kubectl wait \
+		--for=condition=Ready \
+		node/k3d-iot-server-0 \
+		--timeout=120s
+
 	@echo "==> Creating namespaces..."
-	@kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-	@kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl create namespace argocd \
+		--dry-run=client -o yaml | kubectl apply -f -
+
+	@kubectl create namespace dev \
+		--dry-run=client -o yaml | kubectl apply -f -
 
 	@echo "==> Installing Argo CD..."
-	@kubectl apply --server-side --force-conflicts \
+	@kubectl apply \
+		--server-side \
+		--force-conflicts \
 		-n argocd \
 		-f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-	@echo "==> Waiting for Argo CD..."
+	@echo "==> Waiting for Argo CD pods..."
 	@kubectl wait \
 		--for=condition=Ready \
 		pods \
@@ -85,34 +103,61 @@ task3:
 		-n argocd \
 		--timeout=300s
 
+	@echo ""
+	@echo "=== Part 3 ready ==="
+	@kubectl get nodes
+	@echo ""
+	@kubectl get namespaces
+	@echo ""
 	@kubectl get pods -n argocd
 
+
+# --------------------------------------------------
+# Part 3 helpers
+# --------------------------------------------------
+
 stop3:
+	@echo "==> Stopping K3d cluster..."
 	k3d cluster stop iot
 
 clean3:
+	@echo "==> Deleting K3d cluster..."
 	k3d cluster delete iot
 
 status3:
-	@echo "=== K3d ==="
+	@echo "=== K3d Cluster ==="
 	@k3d cluster list
 	@echo ""
-	@echo "=== Nodes ==="
+
+	@echo "=== Kubernetes Nodes ==="
 	@kubectl get nodes
 	@echo ""
+
 	@echo "=== Namespaces ==="
 	@kubectl get namespaces
 	@echo ""
+
 	@echo "=== Argo CD ==="
 	@kubectl get pods -n argocd
 	@echo ""
-	@echo "=== Dev ==="
+
+	@echo "=== Dev Namespace ==="
 	@kubectl get all -n dev
 
+
+# --------------------------------------------------
+# Argo CD helpers
+# --------------------------------------------------
+
 argocd-ui:
+	@echo "Argo CD UI:"
+	@echo "https://localhost:8080"
+	@echo ""
+	@echo "Keep this terminal open."
 	kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 argocd-password:
+	@echo -n "Argo CD admin password: "
 	@kubectl -n argocd get secret argocd-initial-admin-secret \
 		-o jsonpath="{.data.password}" | base64 -d
 	@echo
