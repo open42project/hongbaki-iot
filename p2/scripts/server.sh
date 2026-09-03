@@ -20,3 +20,14 @@ until kubectl get nodes >/dev/null 2>&1; do
 done
 
 echo "K3s server ready."
+
+kubectl apply -f /vagrant/confs/app1.yaml
+kubectl apply -f /vagrant/confs/app2.yaml
+kubectl apply -f /vagrant/confs/app3.yaml
+kubectl apply -f /vagrant/confs/ingress.yaml
+
+echo "Part 2 setup complete."
+
+kubectl get nodes -o wide
+kubectl get all
+kubectl get ingress
