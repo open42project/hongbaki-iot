@@ -6,6 +6,7 @@ apt-get update
 apt-get install -y curl
 
 SERVER_IP="192.168.56.110"
+WORKER_IP="192.168.56.111"
 
 while [ ! -f /vagrant/node-token ]; do
   echo "Waiting for server token..."
@@ -17,7 +18,8 @@ TOKEN=$(cat /vagrant/node-token)
 curl -sfL https://get.k3s.io | \
   K3S_URL="https://$SERVER_IP:6443" \
   K3S_TOKEN="$TOKEN" \
-  sh -
+  sh -s - agent \
+  --node-ip "$WORKER_IP"
 
 echo "K3s worker installed."
 
