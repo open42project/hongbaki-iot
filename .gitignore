@@ -1,0 +1,32 @@
+# Vagrant
+.vagrant/
+.vagrant.d/
+
+# VirtualBox
+VirtualBox VMs/
+
+# SSH
+.ssh/
+
+# Shell / user files
+.bash_history
+.bash_logout
+.bashrc
+.profile
+.viminfo
+.wget-hsts
+
+# User config/cache
+.cache/
+.config/
+
+# OS/editor
+.DS_Store
+*.swp
+*~
+
+# K3s temporary secret
+node-token
+
+# Local Git config
+.gitconfig
