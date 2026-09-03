@@ -572,6 +572,9 @@ GitHub
 
 Unlike Parts 1 and 2, Part 3 does not create extra Vagrant machines.
 
+chmod +x ~/p3/scripts/setup.sh
+sudo usermod -aG docker "$USER"
+
 ## Connect from the student computer
 
 For normal VM access:
