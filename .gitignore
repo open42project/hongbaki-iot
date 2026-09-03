@@ -30,3 +30,5 @@ node-token
 
 # Local Git config
 .gitconfig
+
+.kube/

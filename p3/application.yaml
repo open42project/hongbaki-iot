@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/HongbaeKim/Inception-of-Things.git
+    repoURL: https://github.com/HongbaeKim/hongbaki-inception-of-Things.git
     targetRevision: main
     path: p3/confs
 
