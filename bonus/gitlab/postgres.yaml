@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-postgres-password
+  namespace: gitlab
+type: Opaque
+stringData:
+  postgres-password: "gitlabpassword"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres
+  namespace: gitlab
+  labels:
+    run: postgres
+spec:
+  containers:
+  - name: postgres
+    image: postgres:18-alpine
+    ports:
+    - containerPort: 5432
+    env:
+    - name: POSTGRES_PASSWORD
+      value: "gitlabpassword"
+    - name: POSTGRES_USER
+      value: "gitlab"
+    - name: POSTGRES_DB
+      value: "gitlabhq_production"
+    # Important Postgres settings for GitLab schema load
+    args:
+    - "-c"
+    - "max_locks_per_transaction=512"
+    - "-c"
+    - "shared_buffers=256MB"
+    - "-c"
+    - "max_connections=200"
+    - "-c"
+    - "work_mem=16MB"
+    resources:
+      requests:
+        memory: "1.5Gi"
+        cpu: "300m"
+      limits:
+        memory: "2.5Gi"
+        cpu: "1500m"
+    volumeMounts:
+    - name: dshm
+      mountPath: /dev/shm
+  volumes:
+  - name: dshm
+    emptyDir:
+      medium: Memory
+      sizeLimit: 1Gi          # ← this is the critical part
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: gitlab
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    run: postgres

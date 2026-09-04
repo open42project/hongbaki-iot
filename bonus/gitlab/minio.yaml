@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-credentials
+  namespace: gitlab
+type: Opaque
+stringData:
+  accesskey: "minio"
+  secretkey: "minio123"
+  connection: |
+    provider: AWS
+    region: us-east-1
+    aws_access_key_id: minio
+    aws_secret_access_key: minio123
+    endpoint: http://minio:9000
+    path_style: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: minio
+  namespace: gitlab
+  labels:
+    run: minio
+spec:
+  containers:
+  - name: minio
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
+    args:
+    - server
+    - /data
+    env:
+    - name: MINIO_ROOT_USER
+      value: "minio"
+    - name: MINIO_ROOT_PASSWORD
+      value: "minio123"
+    ports:
+    - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: gitlab
+spec:
+  ports:
+  - port: 9000
+    targetPort: 9000
+  selector:
+    run: minio
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-make-buckets
+  namespace: gitlab
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: mc
+        image: minio/mc:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          until mc alias set myminio http://minio:9000 minio minio123; do
+            echo "Waiting for MinIO..."
+            sleep 2
+          done
+          mc mb myminio/gitlab-artifacts || true
+          mc mb myminio/gitlab-lfs || true
+          mc mb myminio/gitlab-uploads || true
+          mc mb myminio/gitlab-packages || true
+          mc mb myminio/gitlab-pseudonymizer || true

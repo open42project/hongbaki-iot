@@ -1,0 +1,161 @@
+global:
+  edition: ce
+
+  gatewayApi:
+    enabled: false
+    installEnvoy: false
+
+  ingress:
+    enabled: false
+    configureCertmanager: false
+    tls:
+      enabled: false
+
+  # Disable custom CA certificate injection in init containers
+  certificates:
+    customCAs: []
+
+  hosts:
+    domain: localhost
+    hostSuffix: ""
+    https: false
+    gitlab:
+      name: ""
+      https: false
+
+  # ------------------------------------------------------------
+  # External PostgreSQL Connection
+  # ------------------------------------------------------------
+  psql:
+    host: postgres
+    port: 5432
+    database: gitlabhq_production
+    username: gitlab
+    password:
+      secret: gitlab-postgres-password
+      key: postgres-password
+    ssl: {}
+
+  # ------------------------------------------------------------
+  # External Redis Connection
+  # ------------------------------------------------------------
+  redis:
+    host: redis
+    port: 6379
+    password:
+      enabled: false
+
+  # Optional: If you want Helm to auto-generate missing secrets without manual kubectl calls:
+  initialRootPassword:
+    secret: gitlab-gitlab-initial-root-password
+    key: password
+  # ------------------------------------------------------------
+  # External Object Storage (MinIO) Configuration
+  # ------------------------------------------------------------
+  minio:
+    enabled: false
+
+  appConfig:
+    enableUsagePing: false
+    enableSeatLink: false
+    enableImprint: false
+    captcha:
+      enabled: false
+    object_store:
+      enabled: true
+      connection:
+        secret: minio-credentials
+        key: connection
+
+  kas:
+    enabled: false
+  grafana:
+    enabled: false
+  pages:
+    enabled: false
+  time_zone: Europe/Berlin
+
+  shell:
+    port: 22
+
+registry:
+  enabled: false
+
+nginx-ingress:
+  enabled: false
+
+prometheus:
+  install: false
+
+postgresql:
+  install: false
+
+redis:
+  install: false
+
+gitlab-runner:
+  install: false
+
+certmanager-issuer:
+  email: "dummy@dummy.com"
+
+# Workload specs...
+gitlab:
+  webservice:
+    replicas: 1
+    workerProcesses: 1
+    extraEnv:
+      INVISIBLE_CAPTCHA_ENABLED: "false"
+      GITLAB_INVISIBLE_CAPTCHA_ENABLED: "false"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+  sidekiq:
+    replicas: 1
+    concurrency: 3
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+  toolbox:
+    replicas: 0
+    extraEnv:
+      S3CMD_CONFIG: ""
+    resources:
+      requests:
+        cpu: 50m
+        memory: 256Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
+
+  migrations:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 1.5Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+gitaly:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    enabled: true
+    size: 7Gi
