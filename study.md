@@ -570,11 +570,20 @@ Argo CD
 GitHub
 ```
 
-Unlike Parts 1 and 2, Part 3 does not create extra Vagrant machines.
-Docker = container engine
-K3d = cluster creator
-K3s = Kubernetes
-kubectl = Kubernetes remote control
+In Part 3, I use Docker to run the containers, K3d to create a lightweight K3s Kubernetes cluster, and kubectl to communicate with Kubernetes. Argo CD watches my GitHub repository. The Kubernetes manifests in p3/confs describe the desired state of the application. If I change the image from v1 to v2 in GitHub and push it, Argo CD detects the difference and updates Kubernetes automatically.
+
+
+
+Docker = runs containers
+
+K3d = creates the K3s cluster
+
+K3s = lightweight Kubernetes
+
+kubectl = command-line tool to control/check Kubernetes
+
+Argo CD = keeps Kubernetes synchronized with GitHub
+
 
 
 chmod +x ~/p3/scripts/setup.sh
