@@ -571,6 +571,11 @@ GitHub
 ```
 
 Unlike Parts 1 and 2, Part 3 does not create extra Vagrant machines.
+Docker = container engine
+K3d = cluster creator
+K3s = Kubernetes
+kubectl = Kubernetes remote control
+
 
 chmod +x ~/p3/scripts/setup.sh
 
