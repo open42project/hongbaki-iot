@@ -898,8 +898,23 @@ You should see:
 ```text
 wil42/playground:v1
 ```
+# Access the v1 application
+The playground Service is a ClusterIP service, so it is only accessible from inside the Kubernetes cluster by default.
 
-The application should return something like:
+Forward local port 8888 to the Service:
+
+```bash
+kubectl port-forward svc/playground -n dev 8888:8888
+```
+Keep that terminal open.
+
+In another terminal, run:
+
+```
+curl http://localhost:8888
+```
+
+Expected result:
 
 ```json
 {"status":"ok","message":"v1"}
