@@ -239,7 +239,7 @@ task3:
 		-n argocd \
 		--timeout=300s
 
-    @echo "==> Creating Argo CD application..."
+	@echo "==> Creating Argo CD application..."
 	@kubectl apply -f p3/application.yaml
 
 	@echo "==> Waiting for playground deployment..."
