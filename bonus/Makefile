@@ -4,12 +4,11 @@
 
 bonus:
 	@echo "==> Installing required packages..."
-	@sudo apt-get update && sudo apt-get install -y snapd
+#	@sudo apt-get update && sudo apt-get install -y snapd
 
-	@echo "==> Installing CLI tools (yq, helm, kubectl, k3d)..."
-	@command -v yq >/dev/null 2>&1 || sudo snap install yq
-	@command -v kubectl >/dev/null 2>&1 || sudo snap install kubectl --classic
-	@command -v k3d >/dev/null 2>&1 || (curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash)
+	@echo "==> Installing CLI tools (helm)..."
+#	@command -v kubectl >/dev/null 2>&1 || sudo snap install kubectl --classic
+#	@command -v k3d >/dev/null 2>&1 || (curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash)
 	@command -v helm >/dev/null 2>&1 || (curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash)
 
 	@echo "==> Checking Docker..."
@@ -39,9 +38,28 @@ bonus:
 		--values gitlab/values.yaml \
 		--timeout 15m
 
+	@echo "==> Waiting for GitLab pods to be Ready or Completed..."
+	@kubectl wait --for=condition=Ready pods --all -n gitlab --timeout=300s 2>/dev/null || \
+	kubectl get pods -n gitlab --no-headers | awk '{print $$1, $$3}' | while read pod status; do \
+		if [ "$$status" != "Completed" ] && [ "$$status" != "Running" ]; then \
+			kubectl wait --for=condition=Ready pod/$$pod -n gitlab --timeout=10s 2>/dev/null || true; \
+		fi; \
+	done
+
+	@echo ""
+	@echo "=== Cluster Nodes ==="
+	@kubectl get nodes
+	@echo ""
+	@echo "=== Namespaces ==="
+	@kubectl get namespaces
+	@echo ""
+	@echo "=== GitLab Pods ==="
+	@kubectl get pods -n gitlab
+
+
 	@echo ""
 	@echo "=== Part 3 Ready ==="
-	@echo "GitLab URL: http://gitlab.local:8080"
+	@echo "GitLab URL: http://localhost:8888"
 
 bonus-check:
 	@set -e; \
