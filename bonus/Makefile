@@ -109,10 +109,12 @@ bonus-status:
 	kubectl get application -n argocd
 
 bonus-gitlab-ui:
-	@echo "GitLab: http://localhost:8888"; \
-	kubectl port-forward svc/gitlab-webservice-default -n gitlab 8888:8181 --address 0.0.0.0
+	@echo "GitLab: http://localhost:8888";
+	@kubectl port-forward svc/gitlab-webservice-default -n gitlab 8888:8181 --address 0.0.0.0
+
+bonus-gitlab-ssh:
 	@echo "GitLab SSH: Forwarding port 22...to make ssh available for the gitlab"
-	sudo KUBECONFIG=$$HOME/.kube/config kubectl port-forward svc/gitlab-gitlab-shell -n gitlab 22:22 --address 0.0.0.0
+	@KUBECONFIG=/home/vmvm/.kube/config kubectl port-forward svc/gitlab-gitlab-shell -n gitlab 22:22 --address 0.0.0.0
 
 bonus-gitlab-password:
 	@echo -n "GitLab root password: "; \
