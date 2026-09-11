@@ -239,6 +239,19 @@ task3:
 		-n argocd \
 		--timeout=300s
 
+    @echo "==> Creating Argo CD application..."
+	@kubectl apply -f p3/application.yaml
+
+	@echo "==> Waiting for playground deployment..."
+	@until kubectl get deployment playground -n dev >/dev/null 2>&1; do \
+		sleep 2; \
+	done
+
+	@kubectl rollout status \
+		deployment/playground \
+		-n dev \
+		--timeout=180s
+
 	@echo ""
 	@echo "=== Part 3 ready ==="
 	@kubectl get nodes
