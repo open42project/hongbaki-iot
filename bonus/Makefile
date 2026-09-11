@@ -21,13 +21,7 @@ bonus:
 	@kubectl wait --for=condition=Ready node/k3d-iot-server-0 --timeout=120s
 
 	@echo "==> Creating namespaces..."
-	@kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-	@kubectl create namespace dev --dry-run=client -o yaml | kubectl apply -f -
 	@kubectl apply -f gitlab/namespace.yaml
-
-	@echo "==> Deploying Argo CD..."
-	@kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-	@kubectl wait --for=condition=Ready pods --all -n argocd --timeout=300s
 
 	@echo "==> Deploying GitLab dependencies (Postgres, Redis, MinIO)..."
 	@kubectl apply -f gitlab/postgres.yaml
