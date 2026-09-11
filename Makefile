@@ -259,6 +259,8 @@ task3:
 	@kubectl get namespaces
 	@echo ""
 	@kubectl get pods -n argocd
+	@echo ""
+	@kubectl get all -n dev
 
 
 # --------------------------------------------------
