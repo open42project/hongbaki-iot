@@ -4,11 +4,7 @@
 
 bonus:
 	@echo "==> Installing required packages..."
-#	@sudo apt-get update && sudo apt-get install -y snapd
-
 	@echo "==> Installing CLI tools (helm)..."
-#	@command -v kubectl >/dev/null 2>&1 || sudo snap install kubectl --classic
-#	@command -v k3d >/dev/null 2>&1 || (curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash)
 	@command -v helm >/dev/null 2>&1 || (curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash)
 
 	@echo "==> Checking Docker..."
@@ -20,12 +16,12 @@ bonus:
 	@kubectl wait --for=condition=Ready node/k3d-iot-server-0 --timeout=120s
 
 	@echo "==> Creating namespaces..."
-	@kubectl apply -f gitlab/namespace.yaml
+	@kubectl apply -f confs/namespace.yaml
 
 	@echo "==> Deploying GitLab dependencies (Postgres, Redis, MinIO)..."
-	@kubectl apply -f gitlab/postgres.yaml
-	@kubectl apply -f gitlab/redis.yaml
-	@kubectl apply -f gitlab/minio.yaml
+	@kubectl apply -f confs/postgres.yaml
+	@kubectl apply -f confs/redis.yaml
+	@kubectl apply -f confs/minio.yaml
 	@kubectl wait --for=condition=Ready pod/postgres -n gitlab --timeout=120s
 	@kubectl wait --for=condition=Ready pod/redis -n gitlab --timeout=120s
 	@kubectl wait --for=condition=Ready pod/minio -n gitlab --timeout=120s
@@ -35,7 +31,7 @@ bonus:
 	@helm repo update
 	@helm upgrade --install gitlab gitlab/gitlab \
 		--namespace gitlab \
-		--values gitlab/values.yaml \
+		--values confs/values.yaml \
 		--timeout 15m
 
 	@echo "==> Waiting for GitLab pods to be Ready or Completed..."
@@ -59,7 +55,14 @@ bonus:
 
 	@echo ""
 	@echo "=== Part 3 Ready ==="
+	@echo "Please Open New Tab and do the FOllowing ------"
+	@echo "make bonus-gitlab-ui ***For Browsing through localhost "
 	@echo "GitLab URL: http://localhost:8888"
+	@echo "********************************"
+	@echo "sudo make bonus-gitlab-ssh"
+	@echo "********************************"
+	@echo "Before cloning make ssh available by forwarding port 22 to the vm"
+	@echo "SUDO is important to forward privileged port"
 
 bonus-check:
 	@set -e; \
@@ -81,9 +84,10 @@ bonus-stop:
 
 bonus-clean:
 	@set -e; \
-	echo "==> Deleting K3d..."; \
-	k3d cluster delete iot; \
-	echo "==> BONUS CLEAN PASSED"
+	echo "==> Deleting gitlab namespace and pods"; \
+	kubectl delete all --all -n gitlab; \
+	echo "==> BONUS GITLAB Namespace and pods deleted"
+	kubectl get all -n gitlab
 
 bonus-prune:
 	@set -e; \
@@ -104,7 +108,7 @@ bonus-status:
 	echo "=== Argo CD ==="; \
 	kubectl get pods -n argocd; \
 	echo "=== GitLab ==="; \
-	kubectl get pods -n gitlab; \
+	kubectl get all -n gitlab; \
 	echo "=== Application ==="; \
 	kubectl get application -n argocd
 
