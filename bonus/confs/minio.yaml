@@ -25,7 +25,7 @@ metadata:
 spec:
   containers:
   - name: minio
-    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    image: quay.io/minio/aistor/minio:latest
     args:
     - server
     - /data
@@ -60,7 +60,7 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: mc
-        image: quay.io/minio/mc:RELEASE.2025-07-21T05-28-08Z
+        image: quay.io/minio/aistor/mc:latest
         command:
         - /bin/sh
         - -c
